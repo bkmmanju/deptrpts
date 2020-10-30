@@ -1,0 +1,134 @@
+<div class="container-fluid">
+	<div class="row">
+
+		<div class="col-md-2 border border-dark bg-dark">
+
+			<div class="form-group row ">
+				<div class="col-md-12 text-center"><label for="example-date-input" class="col-form-label text-white">Start Date</label></div>
+					<div class="col-12">
+					<input id="start-date-input" class="form-control" type="date">
+					</div>
+			</div>
+
+			<div class="form-group row">
+				<div class="col-md-12 text-center"><label for="exmple-date-input" class="col-form-label text-white">End Date</label></div>
+					<div class="col-12">
+					<input id="end-date-input" class="form-control" type="date">
+					</div>
+			</div>
+
+			<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+			{{#filters}}
+	    		{{#hasfilter}}
+				    <div class="panel panel-default">
+
+						<div class="panel-heading" role="tab" id="{{headingid}}">
+							<h5 class="panel-title">
+								<a role="button" data-toggle="collapse" data-parent="#accordion" href="#{{href}}" aria-expanded="true" aria-controls="{{href}}">
+									<i class="fa fa-minus icon-collapse" aria-hidden="true"></i>
+										{{{icon}}}&nbsp;&nbsp;{{filtertitle}}
+								</a>
+							</h5>
+						</div>
+
+						<div id="{{href}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{headingid}}">
+							<div class="panel-body">
+								{{#input1title}}				
+								<div class="form-group row">
+									<div class="col-md-12 text-center"><label for="exmple-date-input" class="col-form-label text-white">{{input1title}}</label></div>
+										<div class="col-12 text-center">
+										<select id ={{input1id}} class ="custom-select">
+										{{{input1html}}}
+										</select>
+										</div>
+								</div>
+								{{/input1title}}
+								{{#input2title}}
+								<div class="form-group row">
+									<div class="col-md-12 text-center"><label for="exmple-date-input" class="col-form-label text-white">{{input2title}}</label></div>
+										<div class="col-12 text-center">
+										{{{input2html}}}
+										</div>
+								</div>
+								{{/input2title}}
+								{{#button1title}}
+								<div class="form-group row">
+									<div class="col-md-12 text-center">
+									</div>
+										<div class="col-12 text-center">
+										<button id="{{buttonid1}}" type="button" class="btn btn-light rounded">{{{button1title}}}</button>
+										</div>
+								</div>
+								{{/button1title}}
+							</div>
+						</div>
+
+					</div>
+	    		{{/hasfilter}}
+	    	{{/filters}}
+	    	</div>
+		</div>
+
+		<div class="col-md-10">
+			<div class="container">
+			<div class="row" id="ajaxresult">
+			</div>
+			</div>
+		</div>
+
+	</div><!-- row ends -->
+</div><!-- container ends -->
+
+
+
+<script>
+	function toggleIcon(e) {
+        $(e.target)
+            .prev('.panel-heading')
+            .find(".icon-collapse")
+            .toggleClass('fa-plus fa-minus');
+    }
+    $('.panel-group').on('hidden.bs.collapse', toggleIcon);
+    $('.panel-group').on('shown.bs.collapse', toggleIcon);
+
+$(document).ready(function(){
+  $('#usersearch').select2();
+ var type1 = "usersearch";
+ $.ajax({
+      url:M.cfg.wwwroot+"/local/deptrpts/ajax.php",
+      method:"POST",
+      data:{type:type1},
+      dataType:"json",
+      success:function(data)
+      {
+        var html = '';
+        for(var count = 0; count < data.length; count++)
+        {
+          html += '<option value="'+data[count].id+'">'+data[count].fullname+'</option>';
+        }
+          $('#usersearch').html(html);
+          <!-- $('#usersearch').select2('refresh'); -->     
+          }
+    })
+	 $('#coursesearch').select2();
+  var type2 ="coursesearch";
+ $.ajax({
+      url:M.cfg.wwwroot+"/local/deptrpts/ajax.php",
+      method:"POST",
+      data:{type:type2},
+      dataType:"json",
+      success:function(data1)
+      {
+        var html1 = '';
+        for(var count = 0; count < data1.length; count++)
+        {
+          html1 += '<option value="'+data1[count].id+'">'+data1[count].name+'</option>';
+        }
+
+          $('#coursesearch').html(html1);
+         <!-- $('#coursesearch').select2('refresh'); -->
+
+      }
+    })
+});
+</script>

@@ -1,0 +1,21 @@
+
+		{{#cards}}
+		{{#hascard}}
+		<div class ="col-md-3 col-xs-12 col-sm-6  p-3">
+			<div class ="card text-center {{color}}">
+				<div class ="card-body">
+					<div class ="row">
+						<div class ="col-md-6 display-4 text-light">
+						{{{icon}}}
+						</div>
+						<div class ="col-md-6">
+						<h3 class="display-5 p-3 text-light">{{data}}</h3>
+						</div>
+					</div>
+				</div>
+				<div class="card-header text-light"><h4>{{cardtitle}}</h4></div>
+			</div>
+			</div>
+		</div>
+		{{/hascard}}
+		{{/cards}}

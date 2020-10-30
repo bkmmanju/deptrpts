@@ -1,0 +1,41 @@
+<div class="col-md-12">
+	<div class="row">
+	<table class="datatable" id="report_table">
+		 <thead>
+		    <tr>
+		      <th>{{#str}}serial,local_deptrpts{{/str}}</th>
+		      <th>{{#str}}fullname,local_deptrpts{{/str}}</th>
+		      <th>{{#str}}email,local_deptrpts{{/str}}</th>
+		      <th>{{#str}}coursename,local_deptrpts{{/str}}</th>
+		      <th>{{#str}}enrolmentdate,local_deptrpts{{/str}}</th>
+		      <th>{{#str}}completiondate,local_deptrpts{{/str}}</th>
+		      <th>{{#str}}completionstatus,local_deptrpts{{/str}}</th>
+		      <th>{{#str}}coursegrade,local_deptrpts{{/str}}</th>
+		    </tr>
+	  </thead>
+	  <tbody>
+	  		{{#tabledata}}
+		  	<tr>
+		  	<td>{{counter}}</td>
+		  	<td>{{username}}</td>
+		  	<td>{{emailid}}</td>
+		  	<td>{{coursefullname}}</td>
+		  	<td>{{enrolledtime}}</td>
+		  	<td>{{completiontime}}</td>
+		  	<td>{{completionstatus}}</td>
+		  	<td>{{coursegrade}}</td>
+		  	</tr>
+		  	{{/tabledata}}
+	  </tbody>
+	</table>
+	</div>
+</div>
+<script>
+$('#report_table').DataTable({
+dom: 'lBfrtip',
+buttons: [
+    'excel', 'pdf'
+]
+});
+</script>
+

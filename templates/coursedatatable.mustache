@@ -1,0 +1,23 @@
+<div class="col-md-12">
+	<div class="row">
+	<table class="datatable" id="course_table">
+		 <thead>
+		    <tr>
+		    	{{#tableheader}}
+			      <th>{{.}}</th>
+		      	{{/tableheader}}
+		    </tr>
+	  </thead>
+	  <tbody>
+	  {{#tabledata}}
+	  {{#.}}
+	  {{#tdata}}
+	  <tr>{{tdata}}</tr>
+	  {{/tdata}}
+	  {{/.}}
+	  {{/tabledata}}
+	  </tbody>
+	</table>
+	</div>
+</div>
+

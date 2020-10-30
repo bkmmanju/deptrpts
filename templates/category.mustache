@@ -1,0 +1,31 @@
+{{#charts}}
+<div class ="col-md-6 p-2">
+	<div class ="card">
+		<canvas id ="piechart{{counter}}">
+		</canvas>
+	</div>
+</div><!--col-6-->
+
+<script>var ctx{{counter}} = document.getElementById("piechart{{counter}}").getContext("2d");
+
+		var piechart{{counter}} = new Chart(ctx{{counter}}, {
+			type: "doughnut",
+			options: {
+				title: {
+					display: true,
+					text: "{{categoryname}}"
+				}
+				},
+				data: {
+					labels: ["Completed", "Inprogress", "Notstarted"],
+					datasets: [{
+						backgroundColor: [
+						"#2ecc71",
+						"#3498db",
+						"#95a5a6",
+						],
+						data: [{{{chartdata}}}]
+						}]
+					}
+					});</script>
+					{{/charts}}

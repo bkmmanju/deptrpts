@@ -1,0 +1,28 @@
+#page-local-deptrpts-index .custom-select{
+	width: 100% !important;
+      
+    }
+
+#page-local-deptrpts-index .icon-collapse{
+	float: right;
+}
+
+#page-local-deptrpts-index .collapsed{
+	box-shadow: none !important;
+}
+#page-local-deptrpts-index a:focus{
+	box-shadow: none !important;
+}
+#page-local-deptrpts-index #accordion a{
+	color: white !important;
+}  
+
+
+#page-local-deptrpts-index .select2-selection__arrow{
+	width: 50% !important;
+
+}
+
+#page-local-deptrpts-index .select2-container{
+	width: 100% !important;
+}
