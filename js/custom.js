@@ -1,3 +1,4 @@
+
  $(document).ready(function () {
  	var filter1 = document.getElementById("collapseOne");
  	  	filter1.classList.add("show");
@@ -24,11 +25,11 @@
 
 
 $(document).ready(function() {
-	// var startdate ='';
- //    $("#start-date-input").change(function(event) {
- //    var status = "startdate";
- //    filter_data(status);
- //    });
+	var startdate ='';
+    $("#start-date-input").change(function(event) {
+    var status = "startdate";
+    filter_data(status);
+    });
 
 	var enddate ='';
     $("#end-date-input").change(function(event) {
@@ -128,3 +129,11 @@ function filter_data(status){
         }
     });
 }
+
+
+
+
+
+
+
+

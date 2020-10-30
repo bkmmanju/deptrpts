@@ -25,7 +25,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 $plugin->release    = '2.0.3 (Build: 2014040200)';
-$plugin->version    = 2020092400;
+$plugin->version    = 2020092401;
 $plugin->requires   = 2015102300; // Moodle 3.0 and above.
 $plugin->component  = 'local_deptrpts';
 $plugin->maturity   = MATURITY_STABLE;

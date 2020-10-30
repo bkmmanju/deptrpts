@@ -37,11 +37,16 @@ $PAGE->requires->jquery();
 $PAGE->requires->css(new moodle_url($CFG->wwwroot.'/local/deptrpts/css/select2.min.css'));
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/select2.min.js'),true);
 echo $OUTPUT->header();
-$abc=array('a','b','c','d');
-$data="";
-foreach ($abc as $a) {
-$data.=$a;
+// //allcourse  button report.
+allcourses_report1();
+function allcourses_report1(){
+  global $DB;
+  $courses=$DB->get_records('course');
+  foreach ($courses as $course) {
+        $listusers = enrolled_users_count_course(null,null,null,$course->id);
+  }
 }
-echo $data;
+
+
 echo $OUTPUT->footer();
 

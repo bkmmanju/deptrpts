@@ -35,23 +35,25 @@ $PAGE->set_title($title);
 $PAGE->set_heading($title);
 $PAGE->requires->jquery();
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/custom.js'), true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/jquery.dataTables.min.js'),true);
+// $PAGE->requires->css(new moodle_url($CFG->wwwroot.'/local/deptrpts/css/jquery.dataTables.min.css'),true);
+
 $PAGE->requires->css(new moodle_url($CFG->wwwroot.'/local/deptrpts/css/select2.min.css'),true);
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/select2.min.js'),true);
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/chart.js'),true);
+$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/table2excel.js'),true);
 
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/jquery.dataTables.min.js'),true);
-$PAGE->requires->css(new moodle_url($CFG->wwwroot.'/local/deptrpts/css/jquery.dataTables.min.css'),true);
-
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/dataTables.buttons.min.js'),true);
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/buttons.print.min.js'),true);
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/buttons.colVis.min.js'),true);
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/buttons.flash.min.js'),true);
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/buttons.html5.min.js'),true);
-//$PAGE->requires->css(new moodle_url($CFG->wwwroot.'/local/deptrpts/css/buttons.dataTables.min.css'),true);
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/jszip.min.js'),true);
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/pdfmake.min.js'),true);
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/vfs_fonts.js'),true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/dataTables.buttons.min.js'),true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/buttons.print.min.js'),true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/buttons.colVis.min.js'),true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/buttons.flash.min.js'),true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/buttons.html5.min.js'),true);
+// $PAGE->requires->css(new moodle_url($CFG->wwwroot.'/local/deptrpts/css/buttons.dataTables.min.css'),true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/jszip.min.js'),true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/pdfmake.min.js'),true);
+// $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/deptrpts/js/vfs_fonts.js'),true);
 
 echo $OUTPUT->header();
 echo filter_ajax_page();
+
 echo $OUTPUT->footer();

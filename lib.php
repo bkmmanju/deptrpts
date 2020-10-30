@@ -45,8 +45,8 @@ function site_report($startdt,$enddt,$siteloc,$sitecat){
     $catname=$site[3];
     
     if(!empty($site[0]) || !empty($site[1]) || !empty($site[2])){
-    $sitecategory.= filter_categorywise_chart($counter,$catdata,$catname);
-    $counter++;
+      $sitecategory.= filter_categorywise_chart($counter,$catdata,$catname);
+      $counter++;
     }
   }
   $yeargraph = get_yearwisecategory_info($startdt,$enddt,$siteloc,$sitecat);
@@ -84,6 +84,7 @@ function site_report($startdt,$enddt,$siteloc,$sitecat){
   $datatablearray = site_report_datatable_deptrpts($startdt,$enddt,$siteloc,$sitecat);
   $retarray=[];
   $retarray['tabledata']=$datatablearray;
+  $retarray['dynlink']="/local/deptrpts/downloadexcel.php?strtdate=".$startdt."&endate=".$enddt."&slocation=".$siteloc."&scategory=".$sitecat."&status=site";
   $sitetable=site_datatable($retarray);
   $fhtml="";
   $fhtml.=$data;
@@ -226,15 +227,17 @@ function course_report($startdt,$enddt,$courseloc,$courseid){
 
   $cmontlygraph=filter_monthly_enrol_completiongraph($monthlygraph[0],$monthlygraph[1]);
   $cousrsedatatable=course_report_datatable($startdt,$enddt,$courseloc,$courseid);
-  //print_object($cousrsedatatable);
-  $coursetable=course_datatable($cousrsedatatable);
+  // $coursetable=course_datatable($cousrsedatatable);
+  course_header($courseid);
+  $coursetable=course_data_table($startdt,$enddt,$courseloc,$courseid);
+  // course_data($startdt,$enddt,$courseloc,$courseid);
   //echo $coursetable;
 
   $fhtml="";
   $fhtml.=$html;
   $fhtml.=$cyearlygraph;
   $fhtml.=$cmontlygraph;
-  //$fhtml.=$cmontlygraph;
+  $fhtml.=$coursetable;
   echo $fhtml;
 }
 
@@ -252,14 +255,14 @@ function allcourses_report($startdt,$enddt){
   $cyearlygraph=filter_yearly_enrol_completiongraph($yearlygraph[0],$yearlygraph[1],$yearlygraph[2],$yearlygraph[3]);
   $monthlygraph=monthwise_course_enrollment_data($startdt,$enddt,null,null);
   $cmontlygraph=filter_monthly_enrol_completiongraph($monthlygraph[0],$monthlygraph[1]);
-  // $cousrsedatatable=course_report_datatable($startdt,$enddt,null,null);
-  // $coursetable=course_datatable($cousrsedatatable);
+  $cousrsedatatable=course_report_datatable($startdt,$enddt,null,null);
+  $coursetable=course_datatable($cousrsedatatable);
   // echo $coursetable;
   $html="";
   $html.=$topcards;
   $html.=$cyearlygraph;
   $html.=$cmontlygraph;
-  //$fhtml.=$cmontlygraph;
+  $fhtml.=$coursetable;
   echo $html;
 }
 
@@ -337,7 +340,7 @@ function allusers_report($startdt,$enddt){
   $html.=$usertable;
   echo $html;
 
-    
+
 }
 
 /**
@@ -434,7 +437,7 @@ function filter_ajax_page(){
         'button1title'=>'',
         'buttonid1'=>''
       ),
-    array("hasfilter"=>1,
+      array("hasfilter"=>1,
         'filtertitle'=>get_string('allcourses','local_deptrpts'),
         'headingid'=>"headingFour",
         'href'=>"collapseFour",
@@ -446,8 +449,8 @@ function filter_ajax_page(){
         'input2html'=>'',
         'button1title'=>get_string('allcoursesreport','local_deptrpts'),
         'buttonid1'=>'all_course'
-),
-    array("hasfilter"=>1,
+      ),
+      array("hasfilter"=>1,
         'filtertitle'=>get_string('allusers','local_deptrpts'),
         'headingid'=>"headingFive",
         'href'=>"collapseFive",
@@ -459,7 +462,7 @@ function filter_ajax_page(){
         'input2html'=>'',
         'button1title'=>get_string('allusersreport','local_deptrpts'),
         'buttonid1'=>'all_users'
-)
+      )
     )];
     return $OUTPUT->render_from_template('local_deptrpts/filter_page', $filterarray);
   }
@@ -482,7 +485,7 @@ function filter_top_cards($icon,$cardtitle,$data,$color){
       'color' =>$color)];
 
     return $OUTPUT->render_from_template('local_deptrpts/card', $cardarray);
-}
+  }
 
 /**
 *Rachitha:this function will give category wise charts.
@@ -511,16 +514,16 @@ function filter_categorywise_chart($counter,$categorydata,$categoryname){
 * @return array $grapharray returning it contains enrolllabel,enrolldata,completelabel,completedata.
 */
 function filter_yearly_enrol_completiongraph($enrolllabel,$enrolldata,$completelabel,$completedata){
-global $DB, $OUTPUT;
-$grapharray=[
-  'graph' =>array("hasgraph" =>1,
-    "enrollabel" =>$enrolllabel,
-    "enroldata" =>$enrolldata,
-    "completionlabel" =>$completelabel,
-    "completiondata" =>$completedata
-  )];
-  return $OUTPUT->render_from_template('local_deptrpts/year_graphs', $grapharray);
-}
+  global $DB, $OUTPUT;
+  $grapharray=[
+    'graph' =>array("hasgraph" =>1,
+      "enrollabel" =>$enrolllabel,
+      "enroldata" =>$enrolldata,
+      "completionlabel" =>$completelabel,
+      "completiondata" =>$completedata
+    )];
+    return $OUTPUT->render_from_template('local_deptrpts/year_graphs', $grapharray);
+  }
 
 /**
 *Rachitha:this function will give month wise enrollment and completion graphs.
@@ -576,12 +579,12 @@ function get_course_from_category($startdt,$enddt,$siteloc,$sitecat){
   require_once($CFG->libdir.'/completionlib.php');
   $sql='';
   $sql.="SELECT DISTINCT (c.id) 
-    FROM {course} c
-    JOIN {context} ct ON c.id = ct.instanceid
-    JOIN {role_assignments} ra ON ra.contextid = ct.id
-    JOIN {user} u ON u.id = ra.userid
-    JOIN {role} r ON r.id = ra.roleid 
-    WHERE c.visible = 1 AND c.id != 1";
+  FROM {course} c
+  JOIN {context} ct ON c.id = ct.instanceid
+  JOIN {role_assignments} ra ON ra.contextid = ct.id
+  JOIN {user} u ON u.id = ra.userid
+  JOIN {role} r ON r.id = ra.roleid 
+  WHERE c.visible = 1 AND c.id != 1";
   if(!empty($sitecat)){
     $sql.=" AND c.category = '$sitecat'";
   }
@@ -623,21 +626,21 @@ function get_course_from_category($startdt,$enddt,$siteloc,$sitecat){
       foreach ($enrolled as $user) {
         //here getting complition status.
               //calculating completed users.
-      $completesql='';
-      $completesql.="SELECT cc.* FROM {course_completions} cc
-       JOIN {user} u ON cc.userid = u.id
-       JOIN {course} c ON c.id = cc.course 
-       WHERE c.visible = 1 AND c.id != 1 AND u.id = '$user->id' AND c.id = '$course->id' AND cc.timecompleted IS NOT NULL";
+        $completesql='';
+        $completesql.="SELECT cc.* FROM {course_completions} cc
+        JOIN {user} u ON cc.userid = u.id
+        JOIN {course} c ON c.id = cc.course 
+        WHERE c.visible = 1 AND c.id != 1 AND u.id = '$user->id' AND c.id = '$course->id' AND cc.timecompleted IS NOT NULL";
 
-      if(!empty($startdt) && !empty($enddt)){
-        $completesql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";
-       }
-      if(!empty($siteloc)){
-        $completesql.=" AND u.city = '$siteloc'";
-       }
-      $completed=$DB->get_records_sql($completesql);
-      $completedcount=count($completed);
-      $totalcomplition = $totalcomplition + $completedcount;
+        if(!empty($startdt) && !empty($enddt)){
+          $completesql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";
+        }
+        if(!empty($siteloc)){
+          $completesql.=" AND u.city = '$siteloc'";
+        }
+        $completed=$DB->get_records_sql($completesql);
+        $completedcount=count($completed);
+        $totalcomplition = $totalcomplition + $completedcount;
         //here i am getting all badge count related to this category.
         $sql='';
         $sql.="SELECT b.* FROM {badge} b
@@ -645,10 +648,10 @@ function get_course_from_category($startdt,$enddt,$siteloc,$sitecat){
         JOIN {user} u ON u.id=bi.userid  
         WHERE bi.userid='$user->id' AND b.courseid='$course->id'";
         if(!empty($startdt) && !empty($enddt)){
-        $sql.=" AND bi.dateissued BETWEEN ".$startdt." AND ".$enddt." ";
-          }
+          $sql.=" AND bi.dateissued BETWEEN ".$startdt." AND ".$enddt." ";
+        }
         if(!empty($siteloc)){
-        $sql.=" AND u.city = '$siteloc'";
+          $sql.=" AND u.city = '$siteloc'";
         }
         $badgecount = count($DB->get_records_sql($sql));
         $totalbadges = $totalbadges+$badgecount;
@@ -656,13 +659,13 @@ function get_course_from_category($startdt,$enddt,$siteloc,$sitecat){
         $certificate='';
         $certificate.="SELECT * FROM {simplecertificate_issues} si 
         JOIN {simplecertificate} s ON s.id=si.certificateid 
-         JOIN {user} u ON u.id=si.userid
+        JOIN {user} u ON u.id=si.userid
         WHERE si.userid='$user->id' AND s.course ='$course->id'";
-       if(!empty($startdt) && !empty($enddt)){
-        $certificate.=" AND si.timecreated BETWEEN ".$startdt." AND ".$enddt." ";
-          }
+        if(!empty($startdt) && !empty($enddt)){
+          $certificate.=" AND si.timecreated BETWEEN ".$startdt." AND ".$enddt." ";
+        }
         if(!empty($siteloc)){
-        $certificate.=" AND u.city = '$siteloc'";
+          $certificate.=" AND u.city = '$siteloc'";
         }
         $certificates=$DB->get_records_sql($certificate);
         $certificatecount = count($certificates);
@@ -722,7 +725,7 @@ function user_course_count($userid,$startdate,$enddate,$city){
    return count($courses); 
  }else{
   return false;
- } 
+} 
 }
 
 /**
@@ -797,7 +800,7 @@ function user_course_certificate($userid,$startdate,$enddate,$city){
     }
     $certificates=$DB->get_records_sql($sql);
     if(!empty($certificates)){
-    return count($certificates);     
+      return count($certificates);     
     }
     return false;
   }
@@ -849,28 +852,28 @@ function get_badges_earned($startdt,$enddt,$courseloc,$courseid){
   global $DB;
   $sql='';
   $sql.="SELECT c.id,u.id 
-    FROM {course} AS c 
-    JOIN {badge} AS b ON c.id=b.courseid
-    JOIN {badge_issued} AS bi ON bi.badgeid=b.id
-    JOIN {user} AS u ON u.id=bi.userid
-    WHERE c.visible = 1";
+  FROM {course} AS c 
+  JOIN {badge} AS b ON c.id=b.courseid
+  JOIN {badge_issued} AS bi ON bi.badgeid=b.id
+  JOIN {user} AS u ON u.id=bi.userid
+  WHERE c.visible = 1";
   if($courseid > 1){
     $sql.=" AND u.id = '$courseid'";
   }
-    if(!empty($startdt) && !empty($enddt)){
-      $sql.= " AND b.timecreated BETWEEN '$startdt' AND '$enddt'";
-    }
-    if(!empty($courseloc)){
+  if(!empty($startdt) && !empty($enddt)){
+    $sql.= " AND b.timecreated BETWEEN '$startdt' AND '$enddt'";
+  }
+  if(!empty($courseloc)){
   //here adding this query to main query.
-      $sql.=" AND u.city = '$courseloc'";
-    }
-    $badges=$DB->get_records_sql($sql);
-    if(!empty($badges)){
-        return count($badges);
-    }else{
+    $sql.=" AND u.city = '$courseloc'";
+  }
+  $badges=$DB->get_records_sql($sql);
+  if(!empty($badges)){
+    return count($badges);
+  }else{
 
-       return false;
-    }
+   return false;
+ }
 }
 
 /**
@@ -891,14 +894,14 @@ function get_course_cerficatescount($startdt,$enddt,$courseloc,$courseid){
     JOIN {simplecertificate_issues} AS si ON si.certificateid=sc.id
     JOIN {user} AS u ON u.id=si.userid
     WHERE c.visible=1";
-  if($courseid > 1){
-    $sql.=" AND u.id = '$courseid'";
-  }
+    if($courseid > 1){
+      $sql.=" AND u.id = '$courseid'";
+    }
 
-  if(!empty($startdt) && !empty($enddt)){
+    if(!empty($startdt) && !empty($enddt)){
       $sql.= " AND si.timecreated BETWEEN '$startdt' AND '$enddt'";
     }
-  if(!empty($courseloc)){
+    if(!empty($courseloc)){
   //here adding this query to main query.
       $sql.=" AND u.city = '$courseloc'";
     }
@@ -908,7 +911,7 @@ function get_course_cerficatescount($startdt,$enddt,$courseloc,$courseid){
     }else{
       return false;
     }
-}
+  }
 }
 /**
 *Rachitha:this function will give count of course completion.
@@ -952,12 +955,12 @@ function course_completion_stats($startdt=null,$enddt=null,$sitecat=null,$sitelo
   $sql="";
   $categoryname='';
   $sql.="SELECT DISTINCT (c.id) 
-    FROM {course} c
-    JOIN {context} ct ON c.id = ct.instanceid
-    JOIN {role_assignments} ra ON ra.contextid = ct.id
-    JOIN {user} u ON u.id = ra.userid
-    JOIN {role} r ON r.id = ra.roleid 
-    WHERE c.visible = 1 AND c.id != 1";
+  FROM {course} c
+  JOIN {context} ct ON c.id = ct.instanceid
+  JOIN {role_assignments} ra ON ra.contextid = ct.id
+  JOIN {user} u ON u.id = ra.userid
+  JOIN {role} r ON r.id = ra.roleid 
+  WHERE c.visible = 1 AND c.id != 1";
   if(!empty($sitecat)){
     $sql.=" AND c.category = '$sitecat'";
     $categoryname=$DB->get_field('course_categories', 'name', array('id'=>$sitecat));
@@ -972,57 +975,57 @@ function course_completion_stats($startdt=null,$enddt=null,$sitecat=null,$sitelo
   if(!empty($courses)){
     foreach ($courses as $course) {
       //calculating not started users.
-       $sql='';
-       $sql.="SELECT cc.* FROM {course_completions} cc
-       JOIN {user} u ON cc.userid = u.id
-       JOIN {course} c ON c.id = cc.course 
-       WHERE c.visible = 1 AND c.id != 1 AND c.id = '$course->id' AND cc.timeenrolled IS NOT NULL AND cc.timestarted = 0 AND cc.timecompleted is null ";
+     $sql='';
+     $sql.="SELECT cc.* FROM {course_completions} cc
+     JOIN {user} u ON cc.userid = u.id
+     JOIN {course} c ON c.id = cc.course 
+     WHERE c.visible = 1 AND c.id != 1 AND c.id = '$course->id' AND cc.timeenrolled IS NOT NULL AND cc.timestarted = 0 AND cc.timecompleted is null ";
 
-       if(!empty($startdt) && !empty($enddt)){
-        $sql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";
-       }
-       if(!empty($siteloc)){
-        $sql.=" AND u.city = '$siteloc'";
-       }
-      $notstarted=$DB->get_records_sql($sql);
-      $notstartedcount=count($notstarted);
-      //calculating inprogress users.
-      $inprogresssql='';
-      $inprogresssql.="SELECT cc.* FROM {course_completions} cc
-       JOIN {user} u ON cc.userid = u.id
-       JOIN {course} c ON c.id = cc.course 
-       WHERE c.visible = 1 AND c.id != 1 AND c.id = '$course->id' AND cc.timeenrolled IS NOT NULL AND cc.timestarted != 0 AND cc.timecompleted is null";
-
-      if(!empty($startdt) && !empty($enddt)){
-        $inprogresssql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";
-       }
-      if(!empty($siteloc)){
-        $inprogresssql.=" AND u.city = '$siteloc'";
-       }
-      $inprogress=$DB->get_records_sql($inprogresssql);
-      $inprogresscount=count($inprogress);
-      //calculating completed users.
-      $completesql='';
-      $completesql.="SELECT cc.* FROM {course_completions} cc
-       JOIN {user} u ON cc.userid = u.id
-       JOIN {course} c ON c.id = cc.course 
-       WHERE c.visible = 1 AND c.id != 1 AND c.id = '$course->id' AND cc.timecompleted IS NOT NULL";
-
-      if(!empty($startdt) && !empty($enddt)){
-        $completesql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";
-       }
-      if(!empty($siteloc)){
-        $completesql.=" AND u.city = '$siteloc'";
-       }
-      $completed=$DB->get_records_sql($completesql);
-      $completedcount=count($completed);
-
-      $compcount = $compcount + $completedcount;
-      $inprocount= $inprocount + $inprogresscount;
-      $notstcount=$notstcount + $notstartedcount;
+     if(!empty($startdt) && !empty($enddt)){
+      $sql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";
     }
-  return array($compcount,$inprocount,$notstcount,$categoryname);
+    if(!empty($siteloc)){
+      $sql.=" AND u.city = '$siteloc'";
+    }
+    $notstarted=$DB->get_records_sql($sql);
+    $notstartedcount=count($notstarted);
+      //calculating inprogress users.
+    $inprogresssql='';
+    $inprogresssql.="SELECT cc.* FROM {course_completions} cc
+    JOIN {user} u ON cc.userid = u.id
+    JOIN {course} c ON c.id = cc.course 
+    WHERE c.visible = 1 AND c.id != 1 AND c.id = '$course->id' AND cc.timeenrolled IS NOT NULL AND cc.timestarted != 0 AND cc.timecompleted is null";
+
+    if(!empty($startdt) && !empty($enddt)){
+      $inprogresssql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";
+    }
+    if(!empty($siteloc)){
+      $inprogresssql.=" AND u.city = '$siteloc'";
+    }
+    $inprogress=$DB->get_records_sql($inprogresssql);
+    $inprogresscount=count($inprogress);
+      //calculating completed users.
+    $completesql='';
+    $completesql.="SELECT cc.* FROM {course_completions} cc
+    JOIN {user} u ON cc.userid = u.id
+    JOIN {course} c ON c.id = cc.course 
+    WHERE c.visible = 1 AND c.id != 1 AND c.id = '$course->id' AND cc.timecompleted IS NOT NULL";
+
+    if(!empty($startdt) && !empty($enddt)){
+      $completesql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";
+    }
+    if(!empty($siteloc)){
+      $completesql.=" AND u.city = '$siteloc'";
+    }
+    $completed=$DB->get_records_sql($completesql);
+    $completedcount=count($completed);
+
+    $compcount = $compcount + $completedcount;
+    $inprocount= $inprocount + $inprogresscount;
+    $notstcount=$notstcount + $notstartedcount;
   }
+  return array($compcount,$inprocount,$notstcount,$categoryname);
+}
 }
 
 /**
@@ -1173,15 +1176,15 @@ function get_user_yearly_completion($startdt,$enddt,$userloc,$userid){
   $sql.="SELECT cc.id,cc.timecompleted FROM {course_completions} cc
   INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timecompleted IS NOT NULL";
   if($userid > 1){
-  $sql.=" AND cc.userid = '$userid' ";   
+    $sql.=" AND cc.userid = '$userid' ";   
   }
 
   if(!empty($startdt) && !empty($enddt)){
-  $sql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";   
+    $sql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";   
   }
 
   if(!empty($userloc)){
-  $sql.=" AND u.city = '$userloc'";   
+    $sql.=" AND u.city = '$userloc'";   
   }
 
   $year=$DB->get_records_sql($sql);
@@ -1205,15 +1208,15 @@ function get_enrolled_course_yearly($startdt,$enddt,$userloc,$userid){
   $sql.="SELECT cc.id,cc.timeenrolled FROM {course_completions} cc
   INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timeenrolled IS NOT NULL";
   if($userid > 1){
-  $sql.=" AND cc.userid = '$userid' ";   
+    $sql.=" AND cc.userid = '$userid' ";   
   }
 
   if(!empty($startdt) && !empty($enddt)){
-  $sql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";   
+    $sql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";   
   }
 
   if(!empty($userloc)){
-  $sql.=" AND u.city = '$userloc'";   
+    $sql.=" AND u.city = '$userloc'";   
   }
   $year=$DB->get_records_sql($sql);
   $emptyarray=[];
@@ -1236,15 +1239,15 @@ function get_course_enrolled_info($startdt,$enddt,$userloc,$userid){
   $sql.="SELECT cc.id,cc.timeenrolled FROM {course_completions} cc
   INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timeenrolled IS NOT NULL";
   if($userid > 1){
-  $sql.=" AND cc.userid = '$userid' ";   
+    $sql.=" AND cc.userid = '$userid' ";   
   }
 
   if(!empty($startdt) && !empty($enddt)){
-  $sql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";   
+    $sql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";   
   }
 
   if(!empty($userloc)){
-  $sql.=" AND u.city = '$userloc'";   
+    $sql.=" AND u.city = '$userloc'";   
   }
   // here getting enrolement time.  
   $information=$DB->get_records_sql($sql);
@@ -1283,15 +1286,15 @@ function get_course_completion($startdt,$enddt,$userloc,$userid){
   $sql.="SELECT cc.id,cc.timecompleted FROM {course_completions} cc
   INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timecompleted IS NOT NULL";
   if($userid > 1){
-  $sql.=" AND cc.userid = '$userid' ";   
+    $sql.=" AND cc.userid = '$userid' ";   
   }
 
   if(!empty($startdt) && !empty($enddt)){
-  $sql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";   
+    $sql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";   
   }
 
   if(!empty($userloc)){
-  $sql.=" AND u.city = '$userloc'";   
+    $sql.=" AND u.city = '$userloc'";   
   }
 
   // here getting enrolement time.  
@@ -1327,23 +1330,23 @@ function get_course_completion($startdt,$enddt,$userloc,$userid){
 **/
 function yearwise_course_enrollment_data($startdt,$enddt,$courseloc,$courseid){
  global $DB;
-  $sql='';
-  $sql.="SELECT cc.id,cc.timecompleted FROM {course_completions} cc
-  INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timecompleted IS NOT NULL";
-  if($courseid > 1){
+ $sql='';
+ $sql.="SELECT cc.id,cc.timecompleted FROM {course_completions} cc
+ INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timecompleted IS NOT NULL";
+ if($courseid > 1){
   $sql.=" AND cc.course = '$courseid' ";   
-  }
+}
 
-  if(!empty($startdt) && !empty($enddt)){
+if(!empty($startdt) && !empty($enddt)){
   $sql.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";   
-  }
+}
 
-  if(!empty($courseloc)){
+if(!empty($courseloc)){
   $sql.=" AND u.city = '$courseloc'";   
-  }
- $completiondata = $DB->get_records_sql($sql);
- $completiondate=[];
- foreach ($completiondata as $comkey => $comvalue) {
+}
+$completiondata = $DB->get_records_sql($sql);
+$completiondate=[];
+foreach ($completiondata as $comkey => $comvalue) {
   $completiondate[]=date('Y', $comvalue->timecompleted);
 }
 $completionyear = array_count_values($completiondate);
@@ -1363,20 +1366,20 @@ if(!empty($completionyear)){
   }
 }
 //enrolled data for year wise graph.
-  $enrollsql='';
-  $enrollsql.="SELECT cc.id,cc.timeenrolled FROM {course_completions} cc
-  INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timeenrolled IS NOT NULL";
-  if($courseid > 1){
+$enrollsql='';
+$enrollsql.="SELECT cc.id,cc.timeenrolled FROM {course_completions} cc
+INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timeenrolled IS NOT NULL";
+if($courseid > 1){
   $enrollsql.=" AND cc.course = '$courseid' ";   
-  }
+}
 
-  if(!empty($startdt) && !empty($enddt)){
+if(!empty($startdt) && !empty($enddt)){
   $enrollsql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";   
-  }
+}
 
-  if(!empty($courseloc)){
+if(!empty($courseloc)){
   $enrollsql.=" AND u.city = '$courseloc'";   
-  }
+}
 
 $enrolldates=$DB->get_records_sql($enrollsql);
 $convdate=[];
@@ -1471,7 +1474,7 @@ function userdatatable_report($startdt,$enddt,$userloc,$userid){
     }
     //getting all enrolled courses from userlocation.
     $courses = $DB->get_records_sql($sql);
-}
+  }
   //here creating data for table.
   if(!empty($courses)){
     $counter=1;
@@ -1511,6 +1514,7 @@ function userdatatable_report($startdt,$enddt,$userloc,$userid){
     }
     $retarray=[];
     $retarray['tabledata']=$datatablearray;
+    $retarray['dynlink']="/local/deptrpts/downloadexcel.php?strtdate=".$startdt."&endate=".$enddt."&ulocation=".$userloc."&userselect=".$userid."&status=user";
     return  $retarray;
   }
 }
@@ -1553,8 +1557,8 @@ function course_report_datatable($startdt,$enddt,$courseloc,$courseid){
   $activityname=[];
   $gradevalue=[];
   foreach ($activities as $akey => $avalue) {
-        $activityname[]=$avalue['activityname'];
-        $gradevalue[]=$avalue['gradeval'];
+    $activityname[]=$avalue['activityname'];
+    $gradevalue[]=$avalue['gradeval'];
   } 
   $header1=array(get_string('serial','local_deptrpts'),get_string('fullname','local_deptrpts'),get_string('email','local_deptrpts'));
   $header2=$activityname;
@@ -1563,22 +1567,22 @@ function course_report_datatable($startdt,$enddt,$courseloc,$courseid){
   $counter=1;
   $course=$DB->get_record('course',array('id'=>$courseid));
   $enrolldata=get_enroled_userdata($courseid);
-if(!empty($enrolldata)){
-foreach ($enrolldata as $enkey => $envalue) {
-    $user=$DB->get_record('user',array('id'=>$envalue[0]));
-    if(!empty($user)){
+  if(!empty($enrolldata)){
+    foreach ($enrolldata as $enkey => $envalue) {
+      $user=$DB->get_record('user',array('id'=>$envalue[0]));
+      if(!empty($user)){
 
-      if(!empty($envalue[1])){
+        if(!empty($envalue[1])){
           $enroldate=date('d-m-Y', $envalue[1]);
 
-      }else{
-        $enroldate="-";
-      }
-      $fullname=$user->firstname.' '.$user->lastname;
-      $email=$user->email;
-      $coursename=$course->fullname;
-      $completion=$DB->get_record_sql("SELECT timecompleted FROM {course_completions} WHERE course=".$courseid." AND userid=".$envalue[0]." AND timecompleted IS NOT NULL");
-      if(!empty($completion)){
+        }else{
+          $enroldate="-";
+        }
+        $fullname=$user->firstname.' '.$user->lastname;
+        $email=$user->email;
+        $coursename=$course->fullname;
+        $completion=$DB->get_record_sql("SELECT timecompleted FROM {course_completions} WHERE course=".$courseid." AND userid=".$envalue[0]." AND timecompleted IS NOT NULL");
+        if(!empty($completion)){
           $completiondate=date('d-m-Y',$completion->timecompleted);
         }else{
           $completiondate="-";
@@ -1610,12 +1614,14 @@ foreach ($enrolldata as $enkey => $envalue) {
         $data2=$gradevalue;
         $data3=array($enroldate,$completiondate,$status,$cgrade);
         $tabledata[]['tdata']=array_merge($data1,$data2,$data3);
+        $counter++;
       }
-   }
-        $retarray=[];
-        $retarray['tableheader']=$tableheader;
-        $retarray['tabledata']=$tabledata;
-        return  $retarray;
+    }
+    $retarray=[];
+    $retarray['tableheader']=$tableheader;
+    $retarray['tabledata']=$tabledata;
+        // print_object($retarray);
+    return  $retarray;
   }
 }
 
@@ -1680,10 +1686,10 @@ function enrolled_users_count_course($startdate,$enddate,$location,$courseid){
 
   $courses = $DB->get_records_sql($enrollsql);
   if(!empty($courses)){
-     return count($courses); 
-  }else {
-    return false;
-  }
+   return count($courses); 
+ }else {
+  return false;
+}
 }
 
 /**
@@ -1860,8 +1866,8 @@ function site_report_datatable_deptrpts($startdt,$enddt,$siteloc,$sitecat){
           $completiondata='';
           $completiondata.="SELECT cc.timecompleted FROM {course_completions} cc WHERE course=".$course->id." AND userid=".$envalue->userid." AND cc.timecompleted IS NOT NULL";
           if(!empty($startdt) && !empty($enddt)){
-          $completiondata.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";   
-            }
+            $completiondata.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";   
+          }
 
           $completion = $DB->get_record_sql($completiondata);
 
@@ -1908,22 +1914,22 @@ function allcourse_top_cards_report($startdt,$enddt){
   $totalcompletion=0;
   $courses=$DB->get_records('course');
   foreach ($courses as $course) {
-      if($course->id != 1){
-        $listusers = enrolled_users_count_course($startdt,$enddt,null,$course->id);
-        $totalcount=$totalcount+$listusers;
-        $badgecount= get_badges_earned($startdt,$enddt,null,$course->id);
-        $totalbadgecount=$totalbadgecount+$badgecount;
-        $certificatecount =get_course_cerficatescount($startdt,$enddt,null,$course->id);
-        $totalcertificates=$totalcertificates+$certificatecount;
-        $completioncount =course_complition_count($startdt,$enddt,null,$course->id);
-        $totalcompletion =$totalcompletion+$completioncount;
-      }
+    if($course->id != 1){
+      $listusers = enrolled_users_count_course($startdt,$enddt,null,$course->id);
+      $totalcount=$totalcount+$listusers;
+      $badgecount= get_badges_earned($startdt,$enddt,null,$course->id);
+      $totalbadgecount=$totalbadgecount+$badgecount;
+      $certificatecount =get_course_cerficatescount($startdt,$enddt,null,$course->id);
+      $totalcertificates=$totalcertificates+$certificatecount;
+      $completioncount =course_complition_count($startdt,$enddt,null,$course->id);
+      $totalcompletion =$totalcompletion+$completioncount;
+    }
   }
-    $title=array(get_string('enrolledusers','local_deptrpts'),
+  $title=array(get_string('enrolledusers','local_deptrpts'),
     get_string('userscompleted','local_deptrpts'),
     get_string('badges','local_deptrpts'),
     get_string('certificates','local_deptrpts'));
-    $icon=array("<i class='fa fa-check-square-o' aria-hidden='true'></i>",
+  $icon=array("<i class='fa fa-check-square-o' aria-hidden='true'></i>",
     "<i class='fa fa-certificate' aria-hidden='true'></i>",
     "<i class='fa fa-list' aria-hidden='true'></i>",
     "<i class='fa fa-address-card-o' aria-hidden='true'></i>");
@@ -1949,16 +1955,16 @@ function allusers_topcards_report($startdt,$enddt){
   $allcompletioncount=0;
   $users=$DB->get_records('user');
   foreach ($users as $user) {
-        if($user->id != 1){
-            $coursecount = user_course_count($user->id,$startdt,$enddt,null);
-            $allusercount=$allusercount+$coursecount;
-            $badgecount= user_badge_count($user->id,$startdt,$enddt,null);
-            $allbadgecount=$allbadgecount+$badgecount;
-            $certificatecount=user_course_certificate($user->id,$startdt,$enddt,null);
-            $allcertificatecount=$allcertificatecount+$certificatecount;
-            $completioncount=user_course_completion($user->id,$startdt,$enddt,null);
-            $allcompletioncount=$allcompletioncount+$completioncount;
-        }
+    if($user->id != 1){
+      $coursecount = user_course_count($user->id,$startdt,$enddt,null);
+      $allusercount=$allusercount+$coursecount;
+      $badgecount= user_badge_count($user->id,$startdt,$enddt,null);
+      $allbadgecount=$allbadgecount+$badgecount;
+      $certificatecount=user_course_certificate($user->id,$startdt,$enddt,null);
+      $allcertificatecount=$allcertificatecount+$certificatecount;
+      $completioncount=user_course_completion($user->id,$startdt,$enddt,null);
+      $allcompletioncount=$allcompletioncount+$completioncount;
+    }
   }
   $title=array(get_string('enrolledcourses','local_deptrpts'),
     get_string('coursecompletion','local_deptrpts'),
@@ -1976,3 +1982,436 @@ function allusers_topcards_report($startdt,$enddt){
   $html.=filter_top_cards($icon[3],$title[3],$allcertificatecount,$color[3]);
   echo $html;
 }
+
+
+function site_export($strtdate,$endate,$siteloc,$sitecat){
+  global $DB,$CFG;
+  $datatablearray=[];
+  $counter=1;
+
+  $sql="";
+  $sql.="SELECT DISTINCT (c.id) 
+  FROM {course} c
+  JOIN {context} ct ON c.id = ct.instanceid
+  JOIN {role_assignments} ra ON ra.contextid = ct.id
+  JOIN {user} u ON u.id = ra.userid
+  JOIN {role} r ON r.id = ra.roleid 
+  WHERE c.visible = 1 AND c.id != 1";
+  if(!empty($sitecat)){
+    $sql.=" AND c.category = '$sitecat'";
+  }
+  if(!empty($siteloc)){
+    $sql.=" AND u.city = '$siteloc'";
+  }
+  $courses = $DB->get_records_sql($sql);
+  $headers=array(get_string('serial','local_deptrpts'),
+    get_string('fullname','local_deptrpts'),
+    get_string('email','local_deptrpts'),
+    get_string('coursename','local_deptrpts'),
+    get_string('enrolmentdate','local_deptrpts'),
+    get_string('completiondate','local_deptrpts'),
+    get_string('completionstatus','local_deptrpts'),
+    get_string('coursegrade','local_deptrpts'));
+  $datatablearray[]=$headers;
+
+
+  //creating datatable to site-report.
+  foreach ($courses as $scourse) {
+    //here getting enroll course data.
+    $course = $DB->get_record('course',array('id'=>$scourse->id));
+    $enrollsql='';
+    $enrollsql.="SELECT cc.id,cc.userid,cc.timeenrolled FROM {course_completions} cc
+    INNER JOIN {user} u ON cc.userid = u.id WHERE cc.timeenrolled IS NOT NULL";
+    if($course->id){
+      $enrollsql.=" AND cc.course = '$course->id' ";   
+    }
+    if(!empty($startdt) && !empty($enddt)){
+      $enrollsql.=" AND cc.timeenrolled BETWEEN ".$startdt." AND ".$enddt." ";   
+    }
+    if(!empty($siteloc)){
+      $enrollsql.=" AND u.city = '$siteloc'";   
+    }
+    $enroled = $DB->get_records_sql($enrollsql);
+    
+    if(!empty($enroled)){
+      foreach ($enroled as $enkey => $envalue) {
+        $user=$DB->get_record('user',array('id'=>$envalue->userid));
+        if(!empty($user)){
+          if(!empty($envalue->timeenrolled)){
+            $enroldate=date('d-m-Y', $envalue->timeenrolled);
+          }else{
+            $enroldate="-";
+          }
+          $fullname=$user->firstname.' '.$user->lastname;
+          $email=$user->email;
+          $coursename=$course->fullname;
+          $completiondata='';
+          $completiondata.="SELECT cc.timecompleted FROM {course_completions} cc WHERE course=".$course->id." AND userid=".$envalue->userid." AND cc.timecompleted IS NOT NULL";
+          if(!empty($startdt) && !empty($enddt)){
+            $completiondata.=" AND cc.timecompleted BETWEEN ".$startdt." AND ".$enddt." ";   
+          }
+
+          $completion = $DB->get_record_sql($completiondata);
+
+          if(!empty($completion)){
+            $completiondate=date('d-m-Y',$completion->timecompleted);
+          }else
+          {
+            $completiondate="-";
+          }
+
+          $cinfo = new completion_info($course);
+          $iscomplete = $cinfo->is_course_complete($user->id);
+          if(!empty($iscomplete)){
+
+            $status=get_string('complet','local_deptrpts');
+          }else
+          {
+            $status=get_string('notcomplete','local_deptrpts');
+          }
+
+          $grade = grade_get_course_grades($course->id, $envalue->userid);
+          $grd = $grade->grades[$envalue->userid]; 
+          $cgrade=$grd->str_grade;
+
+          $datatablearray[]=array($counter,$fullname,$email,$coursename,$enroldate,$completiondate,$status,$cgrade);
+          $counter++;                
+        }
+      }
+    }
+  }
+  return $datatablearray;
+
+}
+
+function user_exceldownload($startdt,$enddt,$userloc,$userid){
+  global $DB;
+  //We are getting default 1 as a userid when no user is selected.
+  if($userid > 1){
+    $sql='';
+  //here writing sql query passing userid.
+    $sql.="SELECT c.id,u.firstname, u.lastname, c.fullname, u.email
+    FROM mdl_course AS c
+    JOIN mdl_context AS ctx ON c.id = ctx.instanceid
+    JOIN mdl_role_assignments AS ra ON ra.contextid = ctx.id
+    JOIN mdl_user AS u ON u.id = ra.userid
+    WHERE u.id = '$userid'";
+    //here checking startdate and enddate are empty or not.
+    if(!empty($startdt) && !empty($enddt)){
+      //here adding this query to main query.
+      $sql.=" AND ra.timemodified BETWEEN ".$startdt." AND ".$enddt." ";
+    }
+    //here checking userlocation is empty or not.
+    if(!empty($userloc)){
+      //here adding this query to main query.
+      $sql.=" AND u.city = '$userloc'";
+    }
+    //here getting all enrolled courses from userid.
+    $courses = $DB->get_records_sql($sql);
+    //here checking userlocation is empty or not.
+  }else if(!empty($userloc)){
+    $sql='';
+    //here writing query passing userlocation.
+    $sql.="SELECT c.id, u.firstname, u.lastname, c.fullname, u.email
+    FROM mdl_course AS c
+    JOIN mdl_context AS ctx ON c.id = ctx.instanceid
+    JOIN mdl_role_assignments AS ra ON ra.contextid = ctx.id
+    JOIN mdl_user AS u ON u.id = ra.userid
+    WHERE u.city = '$userloc'";
+    if(!empty($startdt) && !empty($enddt)){
+      //adding this query to main query.
+      $sql.=" AND ra.timemodified BETWEEN ".$startdt." AND ".$enddt." ";
+    }
+    //getting all enrolled courses from userlocation.
+    $courses = $DB->get_records_sql($sql);
+  }
+  $headers=array(get_string('serial','local_deptrpts'),
+    get_string('fullname','local_deptrpts'),
+    get_string('email','local_deptrpts'),
+    get_string('coursename','local_deptrpts'),
+    get_string('enrolmentdate','local_deptrpts'),
+    get_string('completiondate','local_deptrpts'),
+    get_string('completionstatus','local_deptrpts'),
+    get_string('coursegrade','local_deptrpts'));
+  $datatablearray[]=$headers;
+  //here creating data for table.
+  if(!empty($courses)){
+    $counter=1;
+    foreach ($courses as $course) {
+      //userfullname
+      $userfullname=$course->firstname.' '.$course->lastname;
+      $email=$course->email;
+      $coursename=$course->fullname;
+      $enroldate=get_enrolement_date_user($course->id,$userid);
+      if(!empty($enroldate)){
+        $enroltime=date('d-m-Y', $enroldate);
+      }else{
+        $enroltime="-";
+      }
+      //here i am finding course complition date.
+      $completion=$DB->get_record_sql("SELECT timecompleted FROM {course_completions} WHERE course=".$course->id." AND userid=".$userid." AND timecompleted IS NOT NULL");
+      if(!empty($completion)){
+        $completiondate=date('d-m-Y',$completion->timecompleted);
+      }else{
+        $completiondate="-";
+      }
+      $courseobject=$DB->get_record('course',array('id'=>$course->id));
+      $cinfo = new completion_info($courseobject);
+      $iscomplete = $cinfo->is_course_complete($userid);
+      if(!empty($iscomplete)){
+
+        $status=get_string('complet','local_deptrpts');
+      }else
+      {
+        $status=get_string('notcomplete','local_deptrpts');
+      }
+      $grade = grade_get_course_grades($course->id, $userid);
+      $grd = $grade->grades[$userid]; 
+      $cgrade=$grd->str_grade;
+      $datatablearray[]=array($counter,$userfullname,$email,$coursename,$enroldate,$completiondate,$status,$cgrade);
+      $counter++;
+    }
+  }
+  return $datatablearray;
+}
+
+function course_header($courseid){
+  global $DB;
+  $activities=get_fast_modinfo($courseid);
+  $activity=$activities->get_cms();
+  //here getting all list of activities grade.
+  //here I am getting all the course in a course.
+  $activities=list_all_activities_grade($courseid);
+  $activityname=[];
+  $gradevalue=[];
+  foreach ($activities as $akey => $avalue) {
+    $activityname[]=$avalue['activityname'];
+    $gradevalue[]=$avalue['gradeval'];
+  } 
+  $header1=array(get_string('serial','local_deptrpts'),
+    get_string('fullname','local_deptrpts'),
+    get_string('email','local_deptrpts'));
+  $header2=$activityname;
+  $header3=array(get_string('enrolmentdate','local_deptrpts'),
+    get_string('completiondate','local_deptrpts'),
+    get_string('completionstatus','local_deptrpts'),
+    get_string('coursegrade','local_deptrpts'));
+  $tableheader =array_merge($header1,$header2,$header3);
+  return $tableheader;  
+}
+
+function course_data_table($startdt,$enddt,$courseloc,$courseid){
+  global $DB;
+  $courseheader=course_header($courseid);
+  $coursedatatable=course_report_datatable($startdt,$enddt,$courseloc,$courseid);
+  $html='';
+  $html.=html_writer::start_div('row');
+
+  $html.=html_writer::start_div('form-group');
+  $html.=html_writer::start_tag('select',array('class'=>'form-control','name'=>'state','id'=>'maxRows'));
+  $html.=html_writer::start_tag('option',array('value'=>'5000'));
+  $html.=get_string('showallrows','local_deptrpts');
+  $html.=html_writer::end_tag('option');
+  $optioarray=array(5,10,15,20,50,70,100);
+  foreach ($optioarray as $optionval) {
+    $html.=html_writer::start_tag('option',array('value'=>$optionval));
+    $html.=$optionval;
+    $html.=html_writer::end_tag('option');
+  }
+  $html.=html_writer::end_tag('select');
+  $html.=html_writer::end_div();
+
+  $html.=html_writer::start_div('table-responsive');
+  $html.=html_writer::start_div('col-md-12');
+  $html.=html_writer::start_tag('table', array('class'=>'table table-striped'));
+  $html.=html_writer::start_tag('thead');
+  $html.=html_writer::start_tag('tr');
+  foreach ($courseheader as $single => $value) {
+    $html.=html_writer::start_tag('th');
+    $html.=$value;
+    $html.=html_writer::end_tag('th');
+  }
+  $html.=html_writer::end_tag('tr');
+  $html.=html_writer::end_tag('thead');
+  $html.=html_writer::start_tag('tbody');
+  
+  foreach ($coursedatatable as $cdatakey => $cvalue) {
+    if($cdatakey !="tableheader"){
+      foreach($cvalue as $ckey => $crvalue){
+        foreach ($crvalue as $crkey => $coursevalue) {
+          $html.=html_writer::start_tag('tr');
+          foreach ($coursevalue as $cckey => $coursedatavalue) {
+            $html.=html_writer::start_tag('td');
+            $html.=$coursedatavalue;
+            $html.=html_writer::end_tag('td');
+          }
+          $html.=html_writer::end_tag('tr');
+        }
+      }
+    }
+  }
+  
+  $html.=html_writer::end_tag('tbody');
+  $html.=html_writer::end_tag('table');
+  $html.=html_writer::end_div();
+  $html.=html_writer::end_div();
+
+  $html.=html_writer::start_div('pagination-container');
+  $html.=html_writer::start_tag('nav');
+  $html.=html_writer::start_tag('ul',array('class'=>'pagination'));
+  $html.=html_writer::start_tag('li',array('data-page'=>'prev'));
+  $html.=html_writer::start_tag('span');
+  $html.=get_string('preview','local_deptrpts');
+  $html.=html_writer::start_tag('span',array('class'=>'sr-only'));
+  $html.=get_string('current','local_deptrpts');
+  $html.=html_writer::end_tag('span');
+  $html.=html_writer::end_tag('span');
+  $html.=html_writer::end_tag('li');
+  $html.=html_writer::start_tag('li',array('data-page'=>'next','id'=>'prev'));
+  $html.=html_writer::start_tag('span');
+  $html.=get_string('next','local_deptrpts');
+  $html.=html_writer::start_tag('span',array('class'=>'sr-only'));
+  $html.=get_string('current','local_deptrpts');
+  $html.=html_writer::end_tag('span');
+  $html.=html_writer::end_tag('span');
+  $html.=html_writer::end_tag('li');
+  $html.=html_writer::end_tag('ul');
+  $html.=html_writer::end_tag('nav');
+  $html.=html_writer::end_div();
+
+  $html.=html_writer::end_div();
+  $html.="<script>
+getPagination('#report_table1');
+function getPagination(table) {
+  var lastPage = 1;
+
+  $('#maxRows')
+    .on('change', function(evt) {
+      //$('.paginationprev').html('');                      // reset pagination
+
+      lastPage = 1;
+      $('.pagination')
+        .find('li')
+        .slice(1, -1)
+        .remove();
+      var trnum = 0; // reset tr counter
+      var maxRows = parseInt($(this).val()); // get Max Rows from select option
+
+      if (maxRows == 5000) {
+        $('.pagination').hide();
+      } else {
+        $('.pagination').show();
+      }
+
+      var totalRows = $(table + ' tbody tr').length; // numbers of rows
+      $(table + ' tr:gt(0)').each(function() {
+        // each TR in  table and not the header
+        trnum++; // Start Counter
+        if (trnum > maxRows) {
+          // if tr number gt maxRows
+
+          $(this).hide(); // fade it out
+        }
+        if (trnum <= maxRows) {
+          $(this).show();
+        } // else fade in Important in case if it ..
+      }); //  was fade out to fade it in
+      if (totalRows > maxRows) {
+        // if tr total rows gt max rows option
+        var pagenum = Math.ceil(totalRows / maxRows); // ceil total(rows/maxrows) to get ..
+        //  numbers of pages
+        for (var i = 1; i <= pagenum; ) {
+          // for each page append pagination li
+$('.pagination #prev').before('<li data-page=' + i +'>\<span>' + i++ +'<span class='sr-only'>(current)</span></span>\</li>').show();
+        } // end for i
+      } // end if row count > max rows
+      $('.pagination [data-page='1']').addClass('active'); // add active class to the first li
+      $('.pagination li').on('click', function(evt) {
+        // on click each page
+        evt.stopImmediatePropagation();
+        evt.preventDefault();
+        var pageNum = $(this).attr('data-page'); // get it's number
+
+        var maxRows = parseInt($('#maxRows').val()); // get Max Rows from select option
+
+        if (pageNum == 'prev') {
+          if (lastPage == 1) {
+            return;
+          }
+          pageNum = --lastPage;
+        }
+        if (pageNum == 'next') {
+          if (lastPage == $('.pagination li').length - 2) {
+            return;
+          }
+          pageNum = ++lastPage;
+        }
+
+        lastPage = pageNum;
+        var trIndex = 0; // reset tr counter
+        $('.pagination li').removeClass('active'); // remove active class from all li
+        $('.pagination [data-page=' + lastPage + ']').addClass('active'); // add active class to the clicked
+        // $(this).addClass('active');                  // add active class to the clicked
+        limitPagging();
+        $(table + ' tr:gt(0)').each(function() {
+          // each tr in table not the header
+          trIndex++; // tr index counter
+          // if tr index gt maxRows*pageNum or lt maxRows*pageNum-maxRows fade if out
+          if (
+            trIndex > maxRows * pageNum ||
+            trIndex <= maxRows * pageNum - maxRows
+          ) {
+            $(this).hide();
+          } else {
+            $(this).show();
+          } //else fade in
+        }); // end of for each tr in table
+      }); // end of on click pagination list
+      limitPagging();
+    })
+    .val(5)
+    .change();
+
+  // end of on select change
+
+  // END OF PAGINATION
+}
+
+function limitPagging() {
+  // alert($('.pagination li').length)
+
+  if ($('.pagination li').length > 7) {
+    if ($('.pagination li.active').attr('data-page') <= 3) {
+      $('.pagination li:gt(5)').hide();
+      $('.pagination li:lt(5)').show();
+      $('.pagination [data-page='next']').show();
+    }
+    if ($('.pagination li.active').attr('data-page') > 3) {
+      $('.pagination li:gt(0)').hide();
+      $('.pagination [data-page='next']').show();
+      for (
+        let i = parseInt($('.pagination li.active').attr('data-page')) - 2;
+        i <= parseInt($('.pagination li.active').attr('data-page')) + 2;
+        i++
+      ) {
+        $('.pagination [data-page=' + i + ']').show();
+      }
+    }
+  }
+}
+
+$(function() {
+  // Just to append id number for each row
+  $('table tr:eq(0)').prepend('<th> ID </th>');
+
+  var id = 0;
+
+  $('table tr:gt(0)').each(function() {
+    id++;
+    $(this).prepend('<td>' + id + '</td>');
+  });
+});
+</script>";
+  return $html;
+}
+

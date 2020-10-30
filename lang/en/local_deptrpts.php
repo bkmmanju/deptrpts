@@ -29,3 +29,11 @@ $string['allcourses']='All Courses';
 $string['allcoursesreport']='All Courses Report';
 $string['allusersreport']='All Users Report';
 $string['allusers']='All Users';
+$string['showallrows']='Showall rows';
+$string['preview']='Preview';
+$string['current']='Current';
+$string['next']='Next';
+
+//scheduled task.
+$string['deptrpts']='Department Report';
+
